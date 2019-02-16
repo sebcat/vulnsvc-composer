@@ -44,7 +44,7 @@ foreach ($jsondata->packages as $package) {
     $res = $matcher->match($package->name, $package->version);
     $vulns = array_merge($vulns, $res);
   } catch (Exception $e) {
-    respond(FALSE, "match failure at package index $i"); 
+    respond(FALSE, "match failure at package index $i");
     /* TODO: log exception? */
   }
   $i++;
