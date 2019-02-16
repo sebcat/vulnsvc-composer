@@ -8,9 +8,38 @@ use Symfony\Component\Yaml\Yaml;
 class Matcher {
 
   private $basepath;
+  private $semver;
 
   public function __construct($basepath) {
     $this->basepath = $basepath;
+    $this->$semver = new Semver();
+  }
+
+  private function anyBranchMatches($vuln, $version) {
+    /* * (star) means any version, used for testing. It could be possible
+     * to check constraints against constraints instead of versions but
+     * it's not done here */
+    if ($version === "*") {
+      return TRUE;
+    }
+
+    foreach ($vuln["branches"] as $name => $branch) {
+      $matches = TRUE;
+      foreach($branch["versions"] as $constraint) {
+        if (!$this->$semver->satisfies($version, $constraint)) {
+          $matches = FALSE;
+          break;
+        }
+      }
+
+      if ($matches) {
+        /* all version constraints in a branch matched against the given
+         * version */
+        return TRUE;
+      }
+    }
+
+    return FALSE;
   }
 
   /* Match a name (vendor/product) and version against a set of known
@@ -19,11 +48,11 @@ class Matcher {
   public function match($name, $version) {
     $res = [];
 
+    /* Split the name into vendor/version and do basic input validation */
     $nameparts = explode("/", $name);
     if (sizeof($nameparts) != 2) {
       return $res;
     }
-
     $vendor  = strtolower($nameparts[0]);
     $product = strtolower($nameparts[1]);
     if ($vendor == "." || $vendor == ".." ||
@@ -31,6 +60,11 @@ class Matcher {
       return $res;
     }
 
+    /* Open up the directory where the vulnerability information is stored
+     * for this vendor/product entry. Iterate over the entries (if any)
+     * and match the product version against the version constraints of the
+     * vulnerable products branches. If any branch matches, it is added
+     * to the result */
     $dirpath = "$this->basepath/$vendor/$product";
     if ($handle = @opendir($dirpath)) {
       while (($entry = readdir($handle)) !== false) {
@@ -38,17 +72,13 @@ class Matcher {
           continue;
         }
 
-        $value = Yaml::parseFile("$dirpath/$entry");
-        $res[] = ["title" => $value["title"],
-                  "link"  => $value["link"],
-                  "cve"   => $value["cve"]];
+        $vuln = Yaml::parseFile("$dirpath/$entry");
+        if ($this->anyBranchMatches($vuln, $version)) {
+          $res[] = $vuln;
+        }
       }
     }
 
-    $semver = new Semver();
-    return $res;//$semver->satisfies($version, $constraints);
+    return $res;
   }
 }
-
-
-
