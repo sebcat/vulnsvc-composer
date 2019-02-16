@@ -9,9 +9,6 @@ Used data set: https://github.com/FriendsOfPHP/security-advisories
 Usage
 -----
 
-# Install vendored dependencies (not included in repo)
-$ composer install
-
 # Run in CLI mode
 $ printf '{"packages":[{"name":"symfony/yaml","version":"2.0.0"}]}' |
     php ./src/index.php |
