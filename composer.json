@@ -1,10 +1,10 @@
 {
     "minimum-stability": "dev",
     "require": {
-        "php": "^7.1.3",
+        "php": "^5.6 || ^7.1",
         "composer/semver": "^1.4",
         "sensiolabs/security-advisories": "dev-master",
-        "symfony/yaml": "^4.2"
+        "symfony/yaml": "^3.4"
     },
     "autoload": {
         "psr-4": {"Placeholder\\Vuln\\": "lib/"}
