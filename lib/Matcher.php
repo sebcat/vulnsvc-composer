@@ -12,7 +12,7 @@ class Matcher {
 
   public function __construct($basepath) {
     $this->basepath = $basepath;
-    $this->$semver = new Semver();
+    $this->semver = new Semver();
   }
 
   private function anyBranchMatches($vuln, $version) {
@@ -26,7 +26,7 @@ class Matcher {
     foreach ($vuln["branches"] as $name => $branch) {
       $matches = TRUE;
       foreach($branch["versions"] as $constraint) {
-        if (!$this->$semver->satisfies($version, $constraint)) {
+        if (!$this->semver->satisfies($version, $constraint)) {
           $matches = FALSE;
           break;
         }
